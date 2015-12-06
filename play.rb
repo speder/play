@@ -36,7 +36,7 @@ class Play
   private
 
   def create_regex
-    @args = prompt_for_pattern until !args.empty?
+    prompt_for_pattern until !args.empty?
     @regex = /#{args.join('.+')}/i
   end
 
