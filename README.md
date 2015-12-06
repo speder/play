@@ -1,2 +1,1 @@
-# play
-fuzzy search and play audio files from the command line
+search audio files by name from the command line and play via vlc
