@@ -1,15 +1,14 @@
 #!/usr/bin/env ruby
 
 # Purpose:
-# - search audio files by name and play via the command line
+# - search audio files by name from the command line and play via vlc
 #
 # Example:
 # - play lucy diamonds
 #
 # Limitations:
-# - no control of audio player
 # - all hell breaks loose if file names contain double quotes
-# - only works with vlc
+# - no control of audio player
 
 require 'find'
 require 'io/console'
@@ -17,35 +16,37 @@ require 'io/console'
 class Play
   AUDIO_EXTENSIONS = %w(aac aiff flac m4a mp3 ogg wav wma).map { |f| ".#{f}" }
 
-  DIR = '/media/common/audio/'
-  RE_DIR = /#{DIR}/
+  DIR = '/media/common/audio'
 
-  attr_reader :wide, :regex, :files, :ok
+  attr_reader :args, :regex, :wide, :files, :ready
 
   def initialize(*args)
+    @args = args.flatten
+    create_regex
+
     @wide = false
-    create_regex(args.flatten)
     search_for_files
 
-    @ok = false
-    prompt_to_play until ok
+    @ready = false
+    prompt_to_play until ready
 
     play_files
   end
 
   private
 
-  def create_regex(pattern = [])
-    pattern = prompt_for_pattern until !pattern.empty?
-    @regex = /#{pattern.join('.+')}/i
+  def create_regex
+    @args = prompt_for_pattern until !args.empty?
+    @regex = /#{args.join('.+')}/i
   end
 
   def prompt_for_pattern
     puts
-    print 'Search pattern > '
+    print 'Search for > '
     STDIN.flush
+
     response = STDIN.gets.chomp
-    response.split(/\s+/)
+    @args = response.split(/\s+/)
   end
 
   def search_for_files
@@ -73,7 +74,8 @@ class Play
   end
 
   def file_with_dir(path)
-    path.gsub(RE_DIR, '')
+    dir = DIR[-1] == '/' ? DIR : "#{DIR}/"
+    path.gsub(dir, '')
   end
 
   def file_name(path)
@@ -131,13 +133,14 @@ class Play
       search_for_files
 
     when 'p'
-      @ok = true
+      @ready = true
 
     when 'q'
       puts 'bye'
       exit
 
     when 's'
+      @args = []
       create_regex
       search_for_files
 
