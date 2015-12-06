@@ -18,7 +18,7 @@ class Play
 
   DIR = '/media/common/audio'
 
-  attr_reader :args, :regex, :wide, :files, :ready
+  attr_reader :args, :regex, :wide, :files, :play
 
   def initialize(*args)
     @args = args.flatten
@@ -27,8 +27,8 @@ class Play
     @wide = false
     search_for_files
 
-    @ready = false
-    prompt_to_play until ready
+    @play = false
+    prompt_to_play until play
 
     play_files
   end
@@ -133,7 +133,7 @@ class Play
       search_for_files
 
     when 'p'
-      @ready = true
+      @play = true
 
     when 'q'
       puts 'bye'
