@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
-require 'io/console'
 require 'find'
+require 'io/console'
 
 class Play
   AUDIO_EXTENSIONS = %w(aac aiff flac m4a mp3 ogg wav wma).map { |f| ".#{f}" }
@@ -9,12 +9,11 @@ class Play
   DIR = '/PATH/TO/AUDIO/FILES/'
   RE_DIR = /#{DIR}/
 
-  attr_reader :regex, :files, :ok
+  attr_reader :wide, :regex, :files, :ok
 
   def initialize(*args)
-    args.flatten!
-
-    create_regex(args)
+    @wide = false
+    create_regex(args.flatten)
     search_for_files
 
     @ok = false
@@ -54,26 +53,53 @@ class Play
   end
 
   def name_match?(path)
-    File.basename(path, '.*') =~ regex
+    name = wide ? file_name_with_dir(path) : file_name(path)
+    name =~ regex
+  end
+
+  def file_name_with_dir(path)
+    file_with_dir(path).gsub(/\..+$/, '')
+  end
+
+  def file_with_dir(path)
+    path.gsub(RE_DIR, '')
+  end
+
+  def file_name(path)
+    File.basename(path, '.*')
   end
 
   def prompt_to_play
     display_files
 
     if files.empty?
-      prompt = "(s)SEARCH (q)UIT"
-      responses = /q|s/
+      if wide
+        prompt = '(s)EARCH (q)UIT'
+        response = /q|s/i
+      else
+        prompt = '(w)IDEN (s)EARCH (q)UIT'
+        response = /q|s|w/i
+      end
+
+    elsif wide
+      prompt = '(p)LAY (f)ILTER (m)IX (n)ARROW (s)EARCH (q)UIT'
+      response = /f|m|n|p|q|s/i
+
     else
-      prompt = "(p)LAY (f)ILTER (m)IX (s)SEARCH (q)UIT"
-      responses = /f|m|p|q|s/
+      prompt = '(p)LAY (f)ILTER (m)IX (w)IDEN (s)EARCH (q)UIT'
+      response = /f|m|p|q|s|w/i
     end
 
-    case prompt_user(prompt, responses)
+    case prompt_user(prompt, response)
     when 'f'
       select_files
 
     when 'm'
       shuffle_files
+
+    when 'n'
+      @wide = false
+      search_for_files
 
     when 'p'
       @ok = true
@@ -86,13 +112,17 @@ class Play
       create_regex
       search_for_files
 
+    when 'w'
+      @wide = true
+      search_for_files
+
     end
   end
 
   def display_files
     puts
     puts '---------------------------------------------'
-    puts files.map { |f| file_name(f) }
+    puts files.map { |f| file_with_dir(f) }
     puts '---------------------------------------------'
     puts
   end
@@ -121,7 +151,7 @@ class Play
   end
 
   def prompt_to_select(file)
-    case prompt_user("#{file_name(file)} (y)ES (n)O q(UIT)", /y|n|q/)
+    case prompt_user("#{file_with_dir(file)} (y)ES (n)O q(UIT)", /y|n|q/i)
     when 'y'
       files << file
       true
@@ -134,20 +164,17 @@ class Play
     end
   end
 
-  def file_name(path)
-    path.gsub(RE_DIR, '')
-  end
-
   def shuffle_files
     @files = files.shuffle
   end
 
   def play_files
-    exec %(nohup cvlc #{args} vlc://quit > /dev/null 2>&1)
+    exec %(nohup cvlc #{file_args} vlc://quit >/dev/null 2>&1)
   end
 
-  def args
-    urls.inject('') { |s, url| s << %( "#{url}") }
+  # assuming audio files don't contain double quotes
+  def file_args
+    urls.inject([]) { |s, url| s << %("#{url}") }.join(' ')
   end
 
   def urls
