@@ -88,36 +88,36 @@ class Play
     config = if files.empty?
                if wide
                  {
-                   s: '(s)EARCH',
-                   q: '(q)UIT',
+                   s: '(S)earch',
+                   q: '(Q)uit',
                  }
 
                else
                  {
-                   w: '(w)IDEN',
-                   s: '(s)EARCH',
-                   q: '(q)UIT',
+                   w: '(W)iden',
+                   s: '(S)earch',
+                   q: '(Q)uit',
                  }
                end
 
              elsif wide
                {
-                 p: '(p)LAY',
-                 f: '(f)ILTER',
-                 m: '(m)IX',
-                 n: '(n)ARROW',
-                 s: '(s)EARCH',
-                 q: '(q)UIT',
+                 p: '(P)lay',
+                 f: '(F)ilter',
+                 m: '(M)ix',
+                 n: '(N)arrow',
+                 s: '(S)earch',
+                 q: '(Q)uit',
                }
 
              else
                {
-                 p: '(p)LAY',
-                 f: '(f)ILTER',
-                 m: '(m)IX',
-                 w: '(w)IDEN',
-                 s: '(s)EARCH',
-                 q: '(q)UIT',
+                 p: '(P)lay',
+                 f: '(F)ilter',
+                 m: '(M)ix',
+                 w: '(W)iden',
+                 s: '(S)earch',
+                 q: '(Q)uit',
                }
              end
 
@@ -187,9 +187,9 @@ class Play
 
   def prompt_to_select(file)
     config = {
-      y: "#{file_with_dir(file)} (y)ES",
-      n: '(n)O',
-      q: 'q(UIT)',
+      y: "#{file_with_dir(file)} (Y)es",
+      n: '(N)o',
+      q: '(Q)uit',
     }
 
     case prompt_user(config)
