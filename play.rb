@@ -8,7 +8,6 @@
 #
 # Limitations:
 # - all hell breaks loose if file names contain double quotes
-# - no control of audio player
 
 require 'find'
 require 'io/console'
@@ -57,6 +56,7 @@ class Play
       next unless audio_file?(path)
       next unless name_match?(path)
       files << path
+      print '.'
     end
   end
 
@@ -210,7 +210,7 @@ class Play
   end
 
   def play_files
-    exec %(nohup cvlc #{file_args} vlc://quit >/dev/null 2>&1)
+    exec %(cvlc --extraintf rc #{file_args})
   end
 
   def file_args
